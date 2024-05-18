@@ -8,7 +8,7 @@ from sklearn.decomposition import PCA
 import seaborn as sns
 
 # Reading Raw Data into dataframe
-df = pd.read_excel('C:/Users/alexa/Desktop/Liverpool/02 Machine Learning in Practice/Group Project/Data and Supporting Materials/3 -LAEI2013_MajorRoads_EmissionsbyLink_2013.xlsx') 
+df = pd.read_excel('3 -LAEI2013_MajorRoads_EmissionsbyLink_2013.xlsx') 
 
 # Creating a copy for further processing
 df_proc = df.copy()
