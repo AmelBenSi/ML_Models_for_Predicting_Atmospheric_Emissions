@@ -2,7 +2,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import seaborn as sns
@@ -22,7 +21,7 @@ df_proc.drop(column_names, axis=1, inplace=True)
 
 # Dropping unused columns
 df_proc.drop(['Length (m)', 
-              'Location_ExactCut',
+              'BoroughName_ExactCut',
               'GRID_ExactCut_ID',
               'Emissions Unit', 
               'GridId',
@@ -31,9 +30,8 @@ df_proc.drop(['Length (m)',
               'Emissions',
               ], axis=1, inplace=True)
 
-
 # Create Pivot table to have Emission types as columns
-df_proc = df_proc.pivot_table(index=['Toid', 'BoroughName_ExactCut'], columns=['Pollutant'], values=['Link_Emissions'])
+df_proc = df_proc.pivot_table(index=['Toid', 'Location_ExactCut'], columns=['Pollutant'], values=['Link_Emissions'])
 df_proc.columns = df_proc.columns.droplevel(0)
 df_proc = df_proc.reset_index()
 
@@ -45,7 +43,7 @@ df_proc = df_proc.dropna()
 sns.boxplot(data=df_proc[df_proc.columns[2:]])
 
 # Removing the outliers
-def dropOutliers(data, col):
+def removeOutliers(data, col):
     Q3 = np.quantile(data[col], 0.75)
     Q1 = np.quantile(data[col], 0.25)
     IQR = Q3 - Q1
@@ -62,16 +60,16 @@ def dropOutliers(data, col):
  
  
 for i in df_proc.columns[2:]:
-      if i == df_proc.columns[0]:
-          dropOutliers(df_proc, i)
+      if i == df_proc.columns[2:][0]:
+          removeOutliers(df_proc, i)
       else:
-          dropOutliers(filtered_data, i)
+          removeOutliers(filtered_data, i)
 
 df_proc = filtered_data
 
-# Extract Borough column to separate variable and delete Borough and Toid columns
-y = df_proc['BoroughName_ExactCut']
-df_proc.drop(['BoroughName_ExactCut', 'Toid'], axis=1, inplace=True)
+# Extract Location column to separate variable and delete Borough and Toid columns
+y = df_proc['Location_ExactCut']
+df_proc.drop(['Location_ExactCut', 'Toid'], axis=1, inplace=True)
 
 df_proc.columns
 
@@ -122,10 +120,12 @@ PCA_df = pd.DataFrame(data = x)
 PCA_df = PCA_df.reset_index(drop=True)
 y = y.reset_index(drop=True)
 df_final = pd.concat([PCA_df, y], axis = 1)
-df_final.columns = ['PC1', 'PC2', 'Borough']
+df_final.columns = ['PC1', 'PC2', 'London Area']
 
-# 2D PCA Plot with hue by Borough
+# 2D PCA Plot
 sns.set(font_scale=2.0)
-sns.set_theme(rc={'figure.figsize':(30,15)})
-sns.scatterplot(data=df_final, x='PC1', y='PC2', hue='Borough')
+sns.color_palette("tab10")
+sns.set_theme(rc={'figure.figsize':(20,10)})
+ax = sns.scatterplot(data=df_final, x='PC1', y='PC2', hue='London Area')
+ax.collections[0].set_sizes([150]) 
 plt.title("PC1 vs. PC2")
